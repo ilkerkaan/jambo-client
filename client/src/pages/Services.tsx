@@ -3,60 +3,21 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Link } from "wouter";
 import { Check } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 export default function Services() {
-  const packages = [
-    {
-      name: "Single Session",
-      price: "KSh 4,500",
-      originalPrice: null,
-      description: "Perfect for trying out our service or for very small tattoos",
-      features: [
-        "1 laser removal session",
-        "Picosecond laser technology",
-        "Negative cold therapy",
-        "Professional consultation",
-        "Aftercare instructions"
-      ],
-      popular: false,
-      badge: null
-    },
-    {
-      name: "Small Tattoo Package",
-      price: "KSh 10,000",
-      originalPrice: "KSh 13,500",
-      description: "3 sessions - Ideal for small tattoos (up to 3x3 inches)",
-      features: [
-        "3 laser removal sessions",
-        "Save KSh 3,500",
-        "Picosecond laser technology",
-        "Negative cold therapy",
-        "Session tracking",
-        "Flexible scheduling",
-        "Aftercare support"
-      ],
-      popular: true,
-      badge: "Most Popular"
-    },
-    {
-      name: "Medium Tattoo Package",
-      price: "KSh 15,000",
-      originalPrice: "KSh 22,500",
-      description: "5 sessions - Best for medium-sized tattoos (3x3 to 6x6 inches)",
-      features: [
-        "5 laser removal sessions",
-        "Save KSh 7,500",
-        "Picosecond laser technology",
-        "Negative cold therapy",
-        "Session tracking",
-        "Priority scheduling",
-        "Dedicated support",
-        "Free consultation"
-      ],
-      popular: false,
-      badge: "Best Value"
-    }
-  ];
+  const { data: packages, isLoading } = trpc.packages.getActive.useQuery({
+    tenantSlug: "inklessismore",
+  });
+
+  const { data: tenant } = trpc.tenant.getBySlug.useQuery({
+    slug: "inklessismore",
+  });
+
+  const formatPrice = (priceInCents: number) => {
+    const currency = tenant?.currency || "KSh";
+    return `${currency} ${(priceInCents / 100).toLocaleString()}`;
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -99,121 +60,77 @@ export default function Services() {
       {/* Pricing Cards */}
       <section className="py-16">
         <div className="container">
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {packages.map((pkg, idx) => (
-              <Card key={idx} className={pkg.popular ? "border-primary border-2 shadow-lg" : ""}>
-                <CardHeader>
-                  {pkg.badge && (
-                    <Badge className="w-fit mb-2" variant={pkg.popular ? "default" : "secondary"}>
-                      {pkg.badge}
-                    </Badge>
-                  )}
-                  <CardTitle className="text-2xl">{pkg.name}</CardTitle>
-                  <CardDescription>{pkg.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-6">
-                    {pkg.originalPrice && (
-                      <p className="text-sm text-muted-foreground line-through mb-1">
-                        {pkg.originalPrice}
-                      </p>
+          {isLoading ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Loading packages...</p>
+            </div>
+          ) : packages && packages.length > 0 ? (
+            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              {packages.map((pkg) => (
+                <Card key={pkg.id} className={pkg.isPopular ? "border-primary border-2 shadow-lg" : ""}>
+                  <CardHeader>
+                    {pkg.badge && (
+                      <Badge className="w-fit mb-2" variant={pkg.isPopular ? "default" : "secondary"}>
+                        {pkg.badge}
+                      </Badge>
                     )}
-                    <p className="text-4xl font-bold text-primary">{pkg.price}</p>
-                  </div>
-                  
-                  <ul className="space-y-3">
-                    {pkg.features.map((feature, featureIdx) => (
-                      <li key={featureIdx} className="flex items-start gap-2">
+                    <CardTitle className="text-2xl">{pkg.name}</CardTitle>
+                    <CardDescription>{pkg.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-6">
+                      {pkg.originalPrice && (
+                        <p className="text-sm text-muted-foreground line-through mb-1">
+                          {formatPrice(pkg.originalPrice)}
+                        </p>
+                      )}
+                      <p className="text-4xl font-bold text-primary">{formatPrice(pkg.price)}</p>
+                    </div>
+                    
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-2">
                         <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">{feature}</span>
+                        <span className="text-sm">{pkg.sessionsIncluded} laser removal session{pkg.sessionsIncluded > 1 ? 's' : ''}</span>
                       </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Link href="/booking" className="w-full">
-                    <Button className="w-full" variant={pkg.popular ? "default" : "outline"}>
-                      Select Package
-                    </Button>
-                  </Link>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Additional Services */}
-      <section className="py-16 bg-muted/30">
-        <div className="container">
-          <h2 className="text-3xl font-bold text-center mb-12">Additional Services</h2>
-          
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card>
-              <CardHeader>
-                <CardTitle>Laser Scar Removal</CardTitle>
-                <CardDescription>Reduce the appearance of scars with advanced laser technology</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <p className="text-sm text-muted-foreground line-through">KSh 50,000</p>
-                  <p className="text-3xl font-bold text-primary">KSh 15,000</p>
-                  <p className="text-sm text-muted-foreground mt-1">Limited time offer</p>
-                </div>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Effective for various scar types</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Minimal downtime</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Safe for all skin types</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Link href="/booking" className="w-full">
-                  <Button className="w-full" variant="outline">Book Consultation</Button>
-                </Link>
-              </CardFooter>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Custom Treatment Plans</CardTitle>
-                <CardDescription>Personalized solutions for large or complex tattoos</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <p className="text-3xl font-bold">Custom Pricing</p>
-                  <p className="text-sm text-muted-foreground mt-1">Based on your specific needs</p>
-                </div>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Tailored session count</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Flexible payment options</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Dedicated specialist</span>
-                  </li>
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Link href="/contact" className="w-full">
-                  <Button className="w-full" variant="outline">Contact Us</Button>
-                </Link>
-              </CardFooter>
-            </Card>
-          </div>
+                      {pkg.originalPrice && (
+                        <li className="flex items-start gap-2">
+                          <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                          <span className="text-sm">Save {formatPrice(pkg.originalPrice - pkg.price)}</span>
+                        </li>
+                      )}
+                      <li className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-sm">Picosecond laser technology</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-sm">Negative cold therapy</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-sm">Professional consultation</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-sm">Aftercare support</span>
+                      </li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Link href={`/booking?package=${pkg.id}`} className="w-full">
+                      <Button className="w-full" variant={pkg.isPopular ? "default" : "outline"}>
+                        Select Package
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No packages available at the moment.</p>
+            </div>
+          )}
         </div>
       </section>
 
