@@ -1,106 +1,181 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
-import { Star, Check, MapPin, Phone, Mail } from "lucide-react";
+import { 
+  Sparkles, 
+  Shield, 
+  Clock, 
+  MapPin, 
+  Award, 
+  Heart,
+  ArrowRight,
+  Star,
+  CheckCircle2
+} from "lucide-react";
 
 export default function Home() {
-  return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header/Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <Link href="/">
-            <a className="flex items-center space-x-3">
-              <img src="/logo.png" alt="Inkless Is More" className="h-12 w-12" />
-              <span className="font-bold text-xl hidden sm:inline-block">Inkless Is More</span>
-            </a>
-          </Link>
-          
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <Link href="/">
-              <a className="transition-colors hover:text-primary">Home</a>
-            </Link>
-            <Link href="/services">
-              <a className="transition-colors hover:text-primary">Services</a>
-            </Link>
-            <Link href="/how-it-works">
-              <a className="transition-colors hover:text-primary">How It Works</a>
-            </Link>
-            <Link href="/gallery">
-              <a className="transition-colors hover:text-primary">Gallery</a>
-            </Link>
-            <Link href="/about">
-              <a className="transition-colors hover:text-primary">About Us</a>
-            </Link>
-            <Link href="/contact">
-              <a className="transition-colors hover:text-primary">Contact</a>
-            </Link>
-          </nav>
+  const benefits = [
+    {
+      icon: <Sparkles className="w-8 h-8" />,
+      title: "Advanced PicoSure Technology",
+      description: "Gold standard laser technology for safe, effective tattoo removal with minimal discomfort"
+    },
+    {
+      icon: <Shield className="w-8 h-8" />,
+      title: "Safe & FDA Approved",
+      description: "Certified technology with proven safety record and professional medical standards"
+    },
+    {
+      icon: <Clock className="w-8 h-8" />,
+      title: "Fast Treatment Sessions",
+      description: "Quick 15-30 minute sessions that fit into your busy schedule"
+    },
+    {
+      icon: <MapPin className="w-8 h-8" />,
+      title: "Prime Location",
+      description: "Conveniently located at Two Rivers Mall, Nairobi's premier shopping destination"
+    },
+    {
+      icon: <Award className="w-8 h-8" />,
+      title: "Expert Professionals",
+      description: "Skilled team with expertise in laser technology and skin health"
+    },
+    {
+      icon: <Heart className="w-8 h-8" />,
+      title: "Personalized Care",
+      description: "Tailored treatment plans based on your skin type, tattoo size, and goals"
+    }
+  ];
 
-          <Link href="/booking">
-            <Button className="font-semibold">Book Now</Button>
-          </Link>
+  const testimonials = [
+    {
+      name: "Faith",
+      rating: 5,
+      text: "The pain is nothing compared to getting a new tattoo. Highly recommend!"
+    },
+    {
+      name: "Gabriel",
+      rating: 5,
+      text: "The service is great. Trustful, fast and very professional."
+    },
+    {
+      name: "Stephen",
+      rating: 5,
+      text: "It feels good to see my tattoo fading away after each treatment."
+    },
+    {
+      name: "Isabelle",
+      rating: 5,
+      text: "Only a few sessions and my tattoo is nearly gone. I couldn't be happier with the results!"
+    }
+  ];
+
+  const process = [
+    {
+      step: "1",
+      title: "Free Consultation",
+      description: "We assess your tattoo and create a personalized treatment plan"
+    },
+    {
+      step: "2",
+      title: "Choose Your Package",
+      description: "Select the package that fits your needs and budget"
+    },
+    {
+      step: "3",
+      title: "Treatment Sessions",
+      description: "Quick, comfortable sessions with our advanced PicoSure laser"
+    },
+    {
+      step: "4",
+      title: "Watch It Fade",
+      description: "See visible results after each session as your tattoo disappears"
+    }
+  ];
+
+  return (
+    <div className="min-h-screen">
+      {/* Header/Navigation */}
+      <header className="bg-white border-b sticky top-0 z-50">
+        <div className="container">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-2">
+              <img 
+                src="/home/ubuntu/inkless_logo.png" 
+                alt="Inkless Is More" 
+                className="h-10 w-10 object-contain"
+              />
+              <span className="font-bold text-xl text-foreground">Inkless Is More</span>
+            </div>
+            <nav className="hidden md:flex items-center gap-6">
+              <Link href="/" className="text-foreground hover:text-primary transition-colors">
+                Home
+              </Link>
+              <Link href="/services" className="text-foreground hover:text-primary transition-colors">
+                Services
+              </Link>
+              <Link href="/booking" className="text-foreground hover:text-primary transition-colors">
+                Book Now
+              </Link>
+              <Link href="/admin" className="text-muted-foreground hover:text-primary transition-colors text-sm">
+                Admin
+              </Link>
+            </nav>
+            <Link href="/booking">
+              <Button className="bg-primary hover:bg-primary/90">
+                Book Free Consultation
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-background via-accent/10 to-background py-20 md:py-32">
+      <section className="relative bg-gradient-to-br from-primary/10 via-white to-secondary/10 py-20">
         <div className="container">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <div className="inline-block">
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-                  Kenya's Laser Tattoo Removal Experts
-                </span>
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6 animate-fade-in">
+              <div className="inline-block px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-semibold">
+                Kenya's Laser Tattoo Removal Experts
               </div>
-              
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-                Uncover Flawless Skin with Advanced Laser Tattoo Removal
+              <h1 className="text-5xl md:text-6xl font-bold leading-tight">
+                Uncover Flawless Skin with{" "}
+                <span className="text-primary">Advanced Laser</span>{" "}
+                Tattoo Removal
               </h1>
-              
-              <p className="text-lg text-muted-foreground max-w-xl">
-                Welcome to Nairobi's premier destination for safe and effective laser tattoo removal! 
-                At Inkless Is More, we use advanced Picosecond laser technology combined with negative 
-                cold therapy to fade or remove unwanted tattoos safely and comfortably.
+              <p className="text-lg text-muted-foreground leading-relaxed">
+                Welcome to Nairobi's premier destination for safe and effective tattoo removal! 
+                At Inkless Is More, we use the groundbreaking <strong>PicoSure laser technology</strong>, 
+                the gold standard in tattoo removal, to help you say goodbye to unwanted ink safely and comfortably.
               </p>
-
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/booking">
-                  <Button size="lg" className="text-base font-semibold">
+                  <Button size="lg" className="bg-primary hover:bg-primary/90 text-lg px-8">
                     Book Free Consultation
+                    <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                 </Link>
                 <Link href="/services">
-                  <Button size="lg" variant="outline" className="text-base font-semibold">
-                    View Services & Pricing
+                  <Button size="lg" variant="outline" className="text-lg px-8">
+                    View Packages & Pricing
                   </Button>
                 </Link>
               </div>
-
-              <div className="flex items-center gap-6 pt-4">
-                <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2 pt-4">
+                <div className="flex">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-primary text-primary" />
+                    <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Trusted by 500+ satisfied clients
-                </p>
+                <span className="text-sm text-muted-foreground">Trusted by 500+ satisfied clients</span>
               </div>
             </div>
-
             <div className="relative">
-              <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                <div className="text-center space-y-4 p-8">
-                  <h2 className="text-5xl md:text-7xl font-bold text-primary">
-                    LET YOUR SKIN
-                  </h2>
-                  <h3 className="text-4xl md:text-6xl font-bold">
-                    SHINE AGAIN
-                  </h3>
-                  <p className="text-xl md:text-2xl font-semibold text-muted-foreground">
-                    REDEFINE YOUR STORY
-                  </p>
+              <div className="aspect-square bg-gradient-to-br from-primary to-accent rounded-3xl p-8 flex items-center justify-center">
+                <div className="text-center text-white space-y-4">
+                  <h2 className="text-4xl font-bold">LET YOUR SKIN</h2>
+                  <h2 className="text-5xl font-bold">SHINE AGAIN</h2>
+                  <p className="text-xl opacity-90">REDEFINE YOUR STORY</p>
                 </div>
               </div>
             </div>
@@ -108,27 +183,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-16 bg-muted/30">
+      {/* Benefits Section */}
+      <section className="py-20 bg-white">
         <div className="container">
-          <h2 className="text-3xl font-bold text-center mb-12">What Our Clients Say</h2>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { name: "Faith", text: "The pain is nothing compared to getting a new tattoo." },
-              { name: "Gabriel", text: "The service is great. Trustful, fast and very professional." },
-              { name: "Stephen", text: "It feels good to see my tattoo fading away after each treatment." },
-              { name: "Isabelle", text: "Only a few sessions and my tattoo is nearly gone. I couldn't be happier with the results." }
-            ].map((testimonial, idx) => (
-              <Card key={idx} className="border-2">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-1 mb-3">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                    ))}
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">Why Choose Inkless Is More?</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              We strive to change the scene in the Nairobi tattoo removal industry with expertise, 
+              advanced technology, and personalized care.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {benefits.map((benefit, index) => (
+              <Card key={index} className="border-2 hover:border-primary transition-all hover:shadow-lg">
+                <CardContent className="p-6 space-y-4">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                    {benefit.icon}
                   </div>
-                  <p className="text-sm mb-3 text-muted-foreground">"{testimonial.text}"</p>
-                  <p className="font-semibold text-primary">{testimonial.name}</p>
+                  <h3 className="text-xl font-bold">{benefit.title}</h3>
+                  <p className="text-muted-foreground">{benefit.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -136,53 +209,45 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why Choose Us Section */}
-      <section className="py-16">
+      {/* How It Works */}
+      <section className="py-20 bg-gradient-to-br from-accent/5 to-primary/5">
         <div className="container">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Choose Inkless Is More?</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              We strive to change the scene in the Nairobi tattoo removal industry with expertise, 
-              advanced technology, and personalized care.
-            </p>
+            <h2 className="text-4xl font-bold mb-4">How It Works</h2>
+            <p className="text-lg text-muted-foreground">Simple, straightforward process to flawless skin</p>
           </div>
+          <div className="grid md:grid-cols-4 gap-8">
+            {process.map((item, index) => (
+              <div key={index} className="text-center space-y-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto">
+                  {item.step}
+                </div>
+                <h3 className="text-xl font-bold">{item.title}</h3>
+                <p className="text-muted-foreground">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Advanced Technology",
-                description: "State-of-the-art Picosecond laser technology combined with negative cold therapy for safe and effective removal."
-              },
-              {
-                title: "Expert Team",
-                description: "Skilled professionals with expertise in laser technology and skin health, ensuring you're in safe hands."
-              },
-              {
-                title: "Personalized Care",
-                description: "Tailored treatment plans based on your skin type, tattoo size, colors, and age for optimal results."
-              },
-              {
-                title: "Transparent Pricing",
-                description: "Realistic expectations and seamless pricing without any hidden fees or charges."
-              },
-              {
-                title: "Comfortable Experience",
-                description: "Numbing cream options and comprehensive aftercare to ensure your comfort throughout the process."
-              },
-              {
-                title: "Prime Location",
-                description: "Conveniently located at Two Rivers Mall, 1st Floor, Nairobi's biggest shopping destination."
-              }
-            ].map((feature, idx) => (
-              <Card key={idx}>
-                <CardContent className="pt-6">
-                  <div className="mb-3">
-                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Check className="h-6 w-6 text-primary" />
-                    </div>
+      {/* Testimonials */}
+      <section className="py-20 bg-white">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold mb-4">What Our Clients Say</h2>
+            <p className="text-lg text-muted-foreground">Real results from real people</p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="border-2">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex gap-1">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                    ))}
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <p className="text-muted-foreground italic">"{testimonial.text}"</p>
+                  <p className="font-bold text-primary">- {testimonial.name}</p>
                 </CardContent>
               </Card>
             ))}
@@ -191,89 +256,69 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-primary text-primary-foreground">
-        <div className="container text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ready to Start Your Journey?
-          </h2>
-          <p className="text-lg mb-8 opacity-90 max-w-2xl mx-auto">
+      <section className="py-20 bg-gradient-to-br from-primary to-accent text-white">
+        <div className="container text-center space-y-6">
+          <h2 className="text-4xl md:text-5xl font-bold">Ready to Start Your Journey?</h2>
+          <p className="text-xl opacity-90 max-w-2xl mx-auto">
             If your tattoo no longer feels like a part of you, we are here to help you fade or 
             completely remove it safely. Reclaim your confidence and embrace flawless skin.
           </p>
           <Link href="/booking">
-            <Button size="lg" variant="secondary" className="text-base font-semibold">
+            <Button size="lg" variant="secondary" className="text-lg px-8 bg-white text-primary hover:bg-white/90">
               Book Your Free Consultation Today
+              <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-muted/30 py-12">
+      <footer className="bg-gray-900 text-white py-12">
         <div className="container">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <img src="/logo.png" alt="Inkless Is More" className="h-10 w-10" />
+              <div className="flex items-center gap-2 mb-4">
+                <img 
+                  src="/home/ubuntu/inkless_logo.png" 
+                  alt="Inkless Is More" 
+                  className="h-8 w-8 object-contain"
+                />
                 <span className="font-bold text-lg">Inkless Is More</span>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-gray-400 text-sm">
                 Kenya's premier laser tattoo removal specialists. 
                 We believe in new beginnings and second chances.
               </p>
             </div>
-
             <div>
-              <h3 className="font-semibold mb-4">Quick Links</h3>
-              <ul className="space-y-2 text-sm">
-                <li><Link href="/services"><a className="text-muted-foreground hover:text-primary">Services</a></Link></li>
-                <li><Link href="/how-it-works"><a className="text-muted-foreground hover:text-primary">How It Works</a></Link></li>
-                <li><Link href="/gallery"><a className="text-muted-foreground hover:text-primary">Gallery</a></Link></li>
-                <li><Link href="/about"><a className="text-muted-foreground hover:text-primary">About Us</a></Link></li>
+              <h3 className="font-bold mb-4">Quick Links</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><Link href="/services" className="hover:text-primary transition-colors">Services</Link></li>
+                <li><Link href="/booking" className="hover:text-primary transition-colors">Book Now</Link></li>
+                <li><Link href="/admin" className="hover:text-primary transition-colors">Admin</Link></li>
               </ul>
             </div>
-
             <div>
-              <h3 className="font-semibold mb-4">Contact</h3>
-              <ul className="space-y-3 text-sm">
+              <h3 className="font-bold mb-4">Contact</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
                 <li className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-                  <span className="text-muted-foreground">Two Rivers Mall, 1st Floor, Nairobi</span>
+                  <MapPin className="w-4 h-4 mt-1 flex-shrink-0" />
+                  <span>Two Rivers Mall, 1st Floor, Nairobi</span>
                 </li>
-                <li className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-primary" />
-                  <a href="tel:+254" className="text-muted-foreground hover:text-primary">+254 XXX XXX XXX</a>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-primary" />
-                  <a href="mailto:info@inklessismore.ke" className="text-muted-foreground hover:text-primary">info@inklessismore.ke</a>
-                </li>
+                <li>+254 XXX XXX XXX</li>
+                <li>info@inklessismore.ke</li>
               </ul>
             </div>
-
             <div>
-              <h3 className="font-semibold mb-4">Follow Us</h3>
+              <h3 className="font-bold mb-4">Follow Us</h3>
               <div className="flex gap-4">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" 
-                   className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
-                  <span className="sr-only">Facebook</span>
-                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-                   className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
-                  <span className="sr-only">Instagram</span>
-                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                </a>
-                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer"
-                   className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors">
-                  <span className="sr-only">TikTok</span>
-                  <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
-                </a>
+                <a href="#" className="text-gray-400 hover:text-primary transition-colors">Facebook</a>
+                <a href="#" className="text-gray-400 hover:text-primary transition-colors">Instagram</a>
+                <a href="#" className="text-gray-400 hover:text-primary transition-colors">TikTok</a>
               </div>
             </div>
           </div>
-
-          <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
             <p>© 2025 Inkless Is More. All rights reserved.</p>
           </div>
         </div>

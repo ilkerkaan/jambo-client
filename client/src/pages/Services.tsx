@@ -1,162 +1,282 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Link } from "wouter";
-import { Check } from "lucide-react";
+import { Check, Sparkles, Tag, ArrowRight } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 
 export default function Services() {
+  const [couponCode, setCouponCode] = useState("");
+  
   const { data: packages, isLoading } = trpc.packages.getActive.useQuery({
-    tenantSlug: "inklessismore",
+    tenantSlug: "inklessismore"
   });
 
-  const { data: tenant } = trpc.tenant.getBySlug.useQuery({
-    slug: "inklessismore",
-  });
-
-  const formatPrice = (priceInCents: number) => {
-    const currency = tenant?.currency || "KSh";
-    return `${currency} ${(priceInCents / 100).toLocaleString()}`;
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-KE', {
+      style: 'currency',
+      currency: 'KES',
+      minimumFractionDigits: 0
+    }).format(price);
   };
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <Link href="/">
-            <a className="flex items-center space-x-3">
-              <img src="/logo.png" alt="Inkless Is More" className="h-12 w-12" />
-              <span className="font-bold text-xl hidden sm:inline-block">Inkless Is More</span>
-            </a>
-          </Link>
-          
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <Link href="/"><a className="transition-colors hover:text-primary">Home</a></Link>
-            <Link href="/services"><a className="text-primary font-semibold">Services</a></Link>
-            <Link href="/how-it-works"><a className="transition-colors hover:text-primary">How It Works</a></Link>
-            <Link href="/gallery"><a className="transition-colors hover:text-primary">Gallery</a></Link>
-            <Link href="/about"><a className="transition-colors hover:text-primary">About Us</a></Link>
-            <Link href="/contact"><a className="transition-colors hover:text-primary">Contact</a></Link>
-          </nav>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading packages...</p>
+        </div>
+      </div>
+    );
+  }
 
-          <Link href="/booking">
-            <Button className="font-semibold">Book Now</Button>
-          </Link>
+  const sortedPackages = packages?.sort((a: any, b: any) => a.price - b.price) || [];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-secondary/5">
+      {/* Header */}
+      <header className="bg-white border-b">
+        <div className="container">
+          <div className="flex items-center justify-between h-16">
+            <Link href="/" className="flex items-center gap-2">
+              <img 
+                src="/home/ubuntu/inkless_logo.png" 
+                alt="Inkless Is More" 
+                className="h-10 w-10 object-contain"
+              />
+              <span className="font-bold text-xl">Inkless Is More</span>
+            </Link>
+            <nav className="hidden md:flex items-center gap-6">
+              <Link href="/" className="text-foreground hover:text-primary transition-colors">
+                Home
+              </Link>
+              <Link href="/services" className="text-primary font-semibold">
+                Services
+              </Link>
+              <Link href="/booking" className="text-foreground hover:text-primary transition-colors">
+                Book Now
+              </Link>
+            </nav>
+            <Link href="/booking">
+              <Button className="bg-primary hover:bg-primary/90">
+                Book Now
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="py-16 bg-gradient-to-br from-background via-accent/10 to-background">
-        <div className="container text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Services & Pricing</h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Choose the package that fits your needs. All packages include our advanced Picosecond 
-            laser technology and negative cold therapy for safe, effective tattoo removal.
+      <section className="py-16 bg-gradient-to-br from-primary to-accent text-white">
+        <div className="container text-center space-y-4">
+          <h1 className="text-5xl font-bold">Treatment Packages & Pricing</h1>
+          <p className="text-xl opacity-90 max-w-2xl mx-auto">
+            Transparent pricing with no hidden fees. Choose the package that fits your needs and budget.
           </p>
         </div>
       </section>
 
-      {/* Pricing Cards */}
+      {/* Coupon Section */}
+      <section className="py-8 bg-white border-b">
+        <div className="container">
+          <div className="max-w-md mx-auto">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Enter coupon code"
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button variant="outline">Apply</Button>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2 text-center">
+              Have a referral or affiliate code? Enter it above for your discount!
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Packages Grid */}
       <section className="py-16">
         <div className="container">
-          {isLoading ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Loading packages...</p>
-            </div>
-          ) : packages && packages.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {packages.map((pkg) => (
-                <Card key={pkg.id} className={pkg.isPopular ? "border-primary border-2 shadow-lg" : ""}>
-                  <CardHeader>
-                    {pkg.badge && (
-                      <Badge className="w-fit mb-2" variant={pkg.isPopular ? "default" : "secondary"}>
-                        {pkg.badge}
-                      </Badge>
-                    )}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {sortedPackages.map((pkg: any) => {
+              const isPopular = pkg.name.toLowerCase().includes('5') || pkg.name.toLowerCase().includes('medium');
+              
+              return (
+                <Card 
+                  key={pkg.id} 
+                  className={`relative border-2 hover:shadow-xl transition-all ${
+                    isPopular ? 'border-primary shadow-lg scale-105' : 'hover:border-primary'
+                  }`}
+                >
+                  {isPopular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <div className="bg-gradient-to-r from-primary to-accent text-white px-4 py-1 rounded-full text-sm font-semibold flex items-center gap-1">
+                        <Sparkles className="w-4 h-4" />
+                        Most Popular
+                      </div>
+                    </div>
+                  )}
+                  
+                  <CardHeader className="text-center pb-4">
                     <CardTitle className="text-2xl">{pkg.name}</CardTitle>
-                    <CardDescription>{pkg.description}</CardDescription>
+                    {pkg.description && (
+                      <CardDescription className="text-sm mt-2">{pkg.description}</CardDescription>
+                    )}
                   </CardHeader>
-                  <CardContent>
-                    <div className="mb-6">
-                      {pkg.originalPrice && (
-                        <p className="text-sm text-muted-foreground line-through mb-1">
-                          {formatPrice(pkg.originalPrice)}
+                  
+                  <CardContent className="space-y-4">
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-primary">
+                        {formatPrice(pkg.price)}
+                      </div>
+                      {pkg.sessions && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {pkg.sessions} {pkg.sessions === 1 ? 'session' : 'sessions'}
                         </p>
                       )}
-                      <p className="text-4xl font-bold text-primary">{formatPrice(pkg.price)}</p>
                     </div>
                     
-                    <ul className="space-y-3">
-                      <li className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">{pkg.sessionsIncluded} laser removal session{pkg.sessionsIncluded > 1 ? 's' : ''}</span>
-                      </li>
-                      {pkg.originalPrice && (
-                        <li className="flex items-start gap-2">
-                          <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                          <span className="text-sm">Save {formatPrice(pkg.originalPrice - pkg.price)}</span>
-                        </li>
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2 text-sm">
+                        <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span>PicoSure laser technology</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm">
+                        <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span>Professional consultation</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-sm">
+                        <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span>Aftercare guidance</span>
+                      </div>
+                      {pkg.sessions && pkg.sessions > 1 && (
+                        <div className="flex items-start gap-2 text-sm">
+                          <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <span>Flexible scheduling</span>
+                        </div>
                       )}
-                      <li className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">Picosecond laser technology</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">Negative cold therapy</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">Professional consultation</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">Aftercare support</span>
-                      </li>
-                    </ul>
+                    </div>
                   </CardContent>
+                  
                   <CardFooter>
-                    <Link href={`/booking?package=${pkg.id}`} className="w-full">
-                      <Button className="w-full" variant={pkg.isPopular ? "default" : "outline"}>
+                    <Link href="/booking" className="w-full">
+                      <Button 
+                        className={`w-full ${
+                          isPopular 
+                            ? 'bg-primary hover:bg-primary/90' 
+                            : 'bg-secondary hover:bg-secondary/90'
+                        }`}
+                      >
                         Select Package
+                        <ArrowRight className="ml-2 w-4 h-4" />
                       </Button>
                     </Link>
                   </CardFooter>
                 </Card>
-              ))}
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Info Section */}
+      <section className="py-16 bg-white">
+        <div className="container">
+          <div className="max-w-3xl mx-auto space-y-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold mb-4">What's Included</h2>
+              <p className="text-muted-foreground">Every package includes comprehensive care and support</p>
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">No packages available at the moment.</p>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    Free Consultation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Initial assessment to evaluate your tattoo and create a personalized treatment plan
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    Advanced Technology
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    PicoSure laser - the gold standard in tattoo removal with minimal discomfort
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    Expert Care
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Skilled professionals with expertise in laser technology and skin health
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    Aftercare Support
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Comprehensive aftercare instructions and ongoing support throughout your journey
+                  </p>
+                </CardContent>
+              </Card>
             </div>
-          )}
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16">
-        <div className="container">
-          <Card className="bg-primary text-primary-foreground border-0">
-            <CardContent className="pt-12 pb-12 text-center">
-              <h2 className="text-3xl font-bold mb-4">Have a Coupon Code?</h2>
-              <p className="text-lg mb-6 opacity-90">
-                Enter your affiliate coupon code during booking to receive your exclusive discount!
-              </p>
-              <Link href="/booking">
-                <Button size="lg" variant="secondary" className="font-semibold">
-                  Book with Coupon Code
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+      <section className="py-16 bg-gradient-to-br from-primary to-accent text-white">
+        <div className="container text-center space-y-6">
+          <h2 className="text-4xl font-bold">Ready to Get Started?</h2>
+          <p className="text-xl opacity-90 max-w-2xl mx-auto">
+            Book your free consultation today and take the first step towards flawless skin
+          </p>
+          <Link href="/booking">
+            <Button size="lg" variant="secondary" className="text-lg px-8 bg-white text-primary hover:bg-white/90">
+              Book Free Consultation
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </Button>
+          </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-muted/30 py-8 mt-auto">
-        <div className="container text-center text-sm text-muted-foreground">
-          <p>© 2025 Inkless Is More. All rights reserved.</p>
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="container text-center">
+          <p className="text-gray-400">© 2025 Inkless Is More. All rights reserved.</p>
         </div>
       </footer>
     </div>
