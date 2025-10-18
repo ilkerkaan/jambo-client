@@ -42,7 +42,7 @@ export default function Services() {
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
               <img 
-                src="/home/ubuntu/inkless_logo.png" 
+                src="/logo.png" 
                 alt="Inkless Is More" 
                 className="h-10 w-10 object-contain"
               />

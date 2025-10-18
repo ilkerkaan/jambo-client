@@ -101,7 +101,7 @@ export default function Home() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
               <img 
-                src="/home/ubuntu/inkless_logo.png" 
+                src="/logo.png" 
                 alt="Inkless Is More" 
                 className="h-10 w-10 object-contain"
               />
@@ -122,7 +122,7 @@ export default function Home() {
               </Link>
             </nav>
             <Link href="/booking">
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button className="bg-primary hover:bg-primary/90 text-white">
                 Book Free Consultation
               </Button>
             </Link>
@@ -279,7 +279,7 @@ export default function Home() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <img 
-                  src="/home/ubuntu/inkless_logo.png" 
+                  src="/logo.png" 
                   alt="Inkless Is More" 
                   className="h-8 w-8 object-contain"
                 />
