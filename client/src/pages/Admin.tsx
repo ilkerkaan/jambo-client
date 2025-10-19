@@ -1,4 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useAdminAuth } from "@/contexts/AdminAuthContext";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,14 +9,21 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
-import { ArrowLeft, Plus, Edit, Trash2, Save } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2, Save, LogOut } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { getLoginUrl } from "@/const";
 
 export default function Admin() {
   const { user, isAuthenticated, loading } = useAuth();
+  const { user: adminUser, logout } = useAdminAuth();
+  const [, setLocation] = useLocation();
   const [editingPackage, setEditingPackage] = useState<string | null>(null);
+
+  function handleLogout() {
+    logout();
+    setLocation("/");
+  }
 
   const { data: tenant, refetch: refetchTenant } = trpc.tenant.getMy.useQuery(undefined, {
     enabled: isAuthenticated,
@@ -132,8 +141,12 @@ export default function Admin() {
             </Link>
             <h1 className="text-xl font-bold">Admin Dashboard</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">{user?.name}</span>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-muted-foreground">{adminUser?.email || user?.name}</span>
+            <Button onClick={handleLogout} variant="outline" size="sm">
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
           </div>
         </div>
       </header>
