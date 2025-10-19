@@ -8,7 +8,8 @@ import { AdminAuthProvider } from "./contexts/AdminAuthContext";
 import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 import Home from "./pages/Home";
 import Services from "./pages/Services";
-import Booking from "./pages/Booking";
+import Purchase from "./pages/Purchase";
+import SelectDate from "./pages/SelectDate";
 import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
 
@@ -18,7 +19,8 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/services"} component={Services} />
-      <Route path={"/booking"} component={Booking} />
+      <Route path={"/purchase/:serviceId"} component={Purchase} />
+      <Route path={"/book/select-date"} component={SelectDate} />
       <Route path={"/admin-login"} component={AdminLogin} />
       <Route path={"/admin"} component={() => (
         <ProtectedAdminRoute>
