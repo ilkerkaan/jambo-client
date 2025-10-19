@@ -1,4 +1,3 @@
-import { useAuth } from "@/_core/hooks/useAuth";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -7,125 +6,109 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { trpc } from "@/lib/trpc";
-import { Link } from "wouter";
-import { ArrowLeft, Plus, Edit, Trash2, Save, LogOut } from "lucide-react";
+import { ArrowLeft, Plus, LogOut, Save } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { getLoginUrl } from "@/const";
 
 export default function Admin() {
-  const { user, isAuthenticated, loading } = useAuth();
   const { user: adminUser, logout } = useAdminAuth();
   const [, setLocation] = useLocation();
-  const [editingPackage, setEditingPackage] = useState<string | null>(null);
 
   function handleLogout() {
     logout();
     setLocation("/");
   }
 
-  const { data: tenant, refetch: refetchTenant } = trpc.tenant.getMy.useQuery(undefined, {
-    enabled: isAuthenticated,
+  // Demo data - will be replaced with SaaS backend API calls
+  const [tenant, setTenant] = useState({
+    id: "demo-tenant",
+    name: "Inkless Is More",
+    email: "info@inklessismore.ke",
+    phone: "+254 XXX XXX XXX",
+    whatsappNumber: "+254 XXX XXX XXX",
+    address: "Two Rivers Mall, Nairobi",
+    description: "Professional laser tattoo removal service",
+    logoUrl: "/logo.png",
+    primaryColor: "#00BFA5",
+    accentColor: "#FF6F61",
   });
 
-  const { data: packages, refetch: refetchPackages } = trpc.packages.getAll.useQuery(undefined, {
-    enabled: isAuthenticated,
-  });
-
-  const updateTenantMutation = trpc.tenant.update.useMutation({
-    onSuccess: () => {
-      toast.success("Business settings updated!");
-      refetchTenant();
+  const [packagesList, setPackagesList] = useState([
+    {
+      id: "1",
+      name: "Single Session",
+      description: "1 laser treatment session",
+      price: 50,
+      originalPrice: 75,
+      sessionsIncluded: 1,
     },
-    onError: (error) => {
-      toast.error(error.message);
+    {
+      id: "2",
+      name: "3-Pack",
+      description: "3 laser treatment sessions",
+      price: 120,
+      originalPrice: 225,
+      sessionsIncluded: 3,
     },
-  });
-
-  const createPackageMutation = trpc.packages.create.useMutation({
-    onSuccess: () => {
-      toast.success("Package created!");
-      refetchPackages();
-      setShowNewPackageForm(false);
+    {
+      id: "3",
+      name: "5-Pack",
+      description: "5 laser treatment sessions",
+      price: 180,
+      originalPrice: 375,
+      sessionsIncluded: 5,
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
-
-  const updatePackageMutation = trpc.packages.update.useMutation({
-    onSuccess: () => {
-      toast.success("Package updated!");
-      refetchPackages();
-      setEditingPackage(null);
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
-
-  const deletePackageMutation = trpc.packages.delete.useMutation({
-    onSuccess: () => {
-      toast.success("Package deleted!");
-      refetchPackages();
-    },
-    onError: (error) => {
-      toast.error(error.message);
-    },
-  });
+  ]);
 
   const [showNewPackageForm, setShowNewPackageForm] = useState(false);
+  const [editingPackage, setEditingPackage] = useState<string | null>(null);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
+  if (!adminUser) {
+    return null;
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Admin Access Required</CardTitle>
-            <CardDescription>Please log in to access the admin panel</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild className="w-full">
-              <a href={getLoginUrl()}>Log In</a>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const handleUpdateTenant = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    
+    setTenant({
+      ...tenant,
+      name: (formData.get("name") as string) || tenant.name,
+      email: (formData.get("email") as string) || tenant.email,
+      phone: (formData.get("phone") as string) || tenant.phone,
+      whatsappNumber: (formData.get("whatsappNumber") as string) || tenant.whatsappNumber,
+      address: (formData.get("address") as string) || tenant.address,
+      description: (formData.get("description") as string) || tenant.description,
+      logoUrl: (formData.get("logoUrl") as string) || tenant.logoUrl,
+      primaryColor: (formData.get("primaryColor") as string) || tenant.primaryColor,
+      accentColor: (formData.get("accentColor") as string) || tenant.accentColor,
+    });
+    
+    toast.success("Business settings updated!");
+  };
 
-  if (!tenant) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>No Business Found</CardTitle>
-            <CardDescription>You don't have a business set up yet</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">
-              Contact support to set up your business account.
-            </p>
-            <Link href="/">
-              <Button variant="outline" className="w-full">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const handleCreatePackage = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget as HTMLFormElement);
+    
+    const newPackage = {
+      id: Date.now().toString(),
+      name: (formData.get("name") as string) || "",
+      description: (formData.get("description") as string) || "",
+      price: parseInt((formData.get("price") as string) || "0"),
+      originalPrice: formData.get("originalPrice") ? parseInt(formData.get("originalPrice") as string) : 0,
+      sessionsIncluded: parseInt((formData.get("sessionsIncluded") as string) || "1"),
+    };
+    
+    setPackagesList([...packagesList, newPackage]);
+    setShowNewPackageForm(false);
+    toast.success("Package created!");
+  };
+
+  const handleDeletePackage = (id: string) => {
+    setPackagesList(packagesList.filter(pkg => pkg.id !== id));
+    toast.success("Package deleted!");
+  };
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -133,16 +116,16 @@ export default function Admin() {
       <header className="border-b bg-background">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/">
+            <a href="/">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Site
               </Button>
-            </Link>
+            </a>
             <h1 className="text-xl font-bold">Admin Dashboard</h1>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">{adminUser?.email || user?.name}</span>
+            <span className="text-sm text-muted-foreground">{adminUser?.email}</span>
             <Button onClick={handleLogout} variant="outline" size="sm">
               <LogOut className="h-4 w-4 mr-2" />
               Logout
@@ -170,24 +153,7 @@ export default function Admin() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    const formData = new FormData(e.currentTarget);
-                    updateTenantMutation.mutate({
-                      name: formData.get("name") as string,
-                      description: formData.get("description") as string,
-                      phone: formData.get("phone") as string,
-                      email: formData.get("email") as string,
-                      whatsappNumber: formData.get("whatsappNumber") as string,
-                      address: formData.get("address") as string,
-                      logoUrl: formData.get("logoUrl") as string,
-                      primaryColor: formData.get("primaryColor") as string,
-                      accentColor: formData.get("accentColor") as string,
-                    });
-                  }}
-                  className="space-y-6"
-                >
+                <form onSubmit={handleUpdateTenant} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Business Name</Label>
@@ -230,21 +196,21 @@ export default function Admin() {
                       <div className="space-y-2">
                         <Label htmlFor="primaryColor">Primary Color</Label>
                         <div className="flex gap-2">
-                          <Input id="primaryColor" name="primaryColor" type="color" defaultValue={tenant.primaryColor || "#D4AF37"} className="w-20" />
-                          <Input defaultValue={tenant.primaryColor || "#D4AF37"} readOnly />
+                          <Input id="primaryColor" name="primaryColor" type="color" defaultValue={tenant.primaryColor || "#00BFA5"} className="w-20" />
+                          <Input defaultValue={tenant.primaryColor || "#00BFA5"} readOnly />
                         </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="accentColor">Accent Color</Label>
                         <div className="flex gap-2">
-                          <Input id="accentColor" name="accentColor" type="color" defaultValue={tenant.accentColor || "#000000"} className="w-20" />
-                          <Input defaultValue={tenant.accentColor || "#000000"} readOnly />
+                          <Input id="accentColor" name="accentColor" type="color" defaultValue={tenant.accentColor || "#FF6F61"} className="w-20" />
+                          <Input defaultValue={tenant.accentColor || "#FF6F61"} readOnly />
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <Button type="submit" disabled={updateTenantMutation.isPending}>
+                  <Button type="submit">
                     <Save className="h-4 w-4 mr-2" />
                     Save Changes
                   </Button>
@@ -273,62 +239,39 @@ export default function Admin() {
                     <CardTitle>New Package</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        const formData = new FormData(e.currentTarget);
-                        createPackageMutation.mutate({
-                          name: formData.get("name") as string,
-                          description: formData.get("description") as string,
-                          price: parseInt(formData.get("price") as string),
-                          originalPrice: formData.get("originalPrice") ? parseInt(formData.get("originalPrice") as string) : undefined,
-                          sessionsIncluded: parseInt(formData.get("sessionsIncluded") as string),
-                          isPopular: formData.get("isPopular") === "on",
-                          badge: formData.get("badge") as string || undefined,
-                        });
-                      }}
-                      className="space-y-4"
-                    >
+                    <form onSubmit={handleCreatePackage} className="space-y-4">
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="new-name">Package Name</Label>
-                          <Input id="new-name" name="name" required placeholder="e.g., Small Tattoo Package" />
+                          <Label htmlFor="name">Package Name</Label>
+                          <Input id="name" name="name" placeholder="e.g., 3-Pack" required />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="new-sessions">Sessions Included</Label>
-                          <Input id="new-sessions" name="sessionsIncluded" type="number" required defaultValue="1" />
+                          <Label htmlFor="sessionsIncluded">Sessions Included</Label>
+                          <Input id="sessionsIncluded" name="sessionsIncluded" type="number" defaultValue="1" required />
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="price">Price (KES)</Label>
+                          <Input id="price" name="price" type="number" placeholder="0" required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="originalPrice">Original Price (optional)</Label>
+                          <Input id="originalPrice" name="originalPrice" type="number" placeholder="0" />
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="new-description">Description</Label>
-                        <Textarea id="new-description" name="description" rows={2} />
-                      </div>
-
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="new-price">Price (in cents)</Label>
-                          <Input id="new-price" name="price" type="number" required placeholder="10000" />
-                          <p className="text-xs text-muted-foreground">e.g., 10000 = KSh 100.00</p>
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="new-originalPrice">Original Price (optional)</Label>
-                          <Input id="new-originalPrice" name="originalPrice" type="number" placeholder="13500" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="new-badge">Badge (optional)</Label>
-                          <Input id="new-badge" name="badge" placeholder="Best Value" />
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <input type="checkbox" id="new-isPopular" name="isPopular" className="h-4 w-4" />
-                        <Label htmlFor="new-isPopular" className="cursor-pointer">Mark as Popular</Label>
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea id="description" name="description" placeholder="Describe this package..." rows={3} />
                       </div>
 
                       <div className="flex gap-2">
-                        <Button type="submit" disabled={createPackageMutation.isPending}>Create Package</Button>
-                        <Button type="button" variant="outline" onClick={() => setShowNewPackageForm(false)}>Cancel</Button>
+                        <Button type="submit">Create Package</Button>
+                        <Button type="button" variant="outline" onClick={() => setShowNewPackageForm(false)}>
+                          Cancel
+                        </Button>
                       </div>
                     </form>
                   </CardContent>
@@ -336,72 +279,41 @@ export default function Admin() {
               )}
 
               <div className="grid gap-4">
-                {packages?.map((pkg) => (
+                {packagesList.map((pkg) => (
                   <Card key={pkg.id}>
-                    <CardContent className="pt-6">
-                      {editingPackage === pkg.id ? (
-                        <form
-                          onSubmit={(e) => {
-                            e.preventDefault();
-                            const formData = new FormData(e.currentTarget);
-                            updatePackageMutation.mutate({
-                              id: pkg.id,
-                              name: formData.get("name") as string,
-                              description: formData.get("description") as string,
-                              price: parseInt(formData.get("price") as string),
-                              sessionsIncluded: parseInt(formData.get("sessionsIncluded") as string),
-                              isActive: formData.get("isActive") === "on",
-                            });
-                          }}
-                          className="space-y-4"
-                        >
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <Input name="name" defaultValue={pkg.name} required />
-                            <Input name="sessionsIncluded" type="number" defaultValue={pkg.sessionsIncluded} required />
-                          </div>
-                          <Textarea name="description" defaultValue={pkg.description || ""} rows={2} />
-                          <Input name="price" type="number" defaultValue={pkg.price} required />
-                          <div className="flex items-center gap-2">
-                            <input type="checkbox" id={`active-${pkg.id}`} name="isActive" defaultChecked={pkg.isActive ?? true} className="h-4 w-4" />
-                            <Label htmlFor={`active-${pkg.id}`}>Active</Label>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button type="submit" size="sm">Save</Button>
-                            <Button type="button" size="sm" variant="outline" onClick={() => setEditingPackage(null)}>Cancel</Button>
-                          </div>
-                        </form>
-                      ) : (
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className="text-lg font-semibold">{pkg.name}</h3>
-                              {pkg.isPopular && <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">Popular</span>}
-                              {!pkg.isActive && <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded">Inactive</span>}
-                            </div>
-                            <p className="text-sm text-muted-foreground mb-2">{pkg.description}</p>
-                            <div className="flex gap-4 text-sm">
-                              <span><strong>Price:</strong> KSh {(pkg.price / 100).toFixed(2)}</span>
-                              <span><strong>Sessions:</strong> {pkg.sessionsIncluded}</span>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" onClick={() => setEditingPackage(pkg.id)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => {
-                                if (confirm("Are you sure you want to delete this package?")) {
-                                  deletePackageMutation.mutate({ id: pkg.id });
-                                }
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle>{pkg.name}</CardTitle>
+                          <CardDescription>{pkg.description}</CardDescription>
                         </div>
-                      )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeletePackage(pkg.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Price</p>
+                          <p className="text-2xl font-bold">{pkg.price} KES</p>
+                          {pkg.originalPrice && (
+                            <p className="text-sm text-muted-foreground line-through">{pkg.originalPrice} KES</p>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Sessions</p>
+                          <p className="text-2xl font-bold">{pkg.sessionsIncluded}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">Price per Session</p>
+                          <p className="text-2xl font-bold">{Math.round(pkg.price / pkg.sessionsIncluded)} KES</p>
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -413,12 +325,14 @@ export default function Admin() {
           <TabsContent value="bookings">
             <Card>
               <CardHeader>
-                <CardTitle>Customer Bookings</CardTitle>
-                <CardDescription>View and manage customer appointments</CardDescription>
+                <CardTitle>Bookings</CardTitle>
+                <CardDescription>
+                  View and manage customer bookings (Coming soon - will connect to SaaS backend)
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Booking management will be available once customers start purchasing packages.
+                  Booking management will be available once the SaaS backend is integrated.
                 </p>
               </CardContent>
             </Card>
