@@ -7,23 +7,23 @@ import Footer from "@/components/Footer";
 import { AlertCircle, CheckCircle, Clock, DollarSign, Loader } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
-  getProducts,
-  getAvailability,
+  getServices,
+  getAvailableSlots,
   createBooking,
   validateCoupon,
   getErrorMessage,
   saasConfig,
-  type Product,
-  type TimeSlot,
+  type Service,
+  type AvailableSlot,
 } from "@/lib/saasApi";
 
 export default function Booking() {
   // Form state
   const [step, setStep] = useState<"product" | "date" | "details" | "payment" | "confirmation">("product");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Service | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedTime, setSelectedTime] = useState<string>("");
-  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<AvailableSlot[]>([]);
   const [couponCode, setCouponCode] = useState<string>("");
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
 
@@ -33,7 +33,7 @@ export default function Booking() {
   const [customerPhone, setCustomerPhone] = useState<string>("");
 
   // Data state
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [bookingId, setBookingId] = useState<string>("");
@@ -56,7 +56,7 @@ export default function Booking() {
         return;
       }
 
-      const data = await getProducts();
+      const data = await getServices();
       setProducts(data);
     } catch (err) {
       setError(getErrorMessage(err));
@@ -77,8 +77,8 @@ export default function Booking() {
         return;
       }
 
-      const response = await getAvailability(date);
-      setAvailableSlots(response.slots);
+      const response = await getAvailableSlots(selectedProduct?.id || '');
+      setAvailableSlots(response.available_slots);
     } catch (err) {
       setError(getErrorMessage(err));
       setAvailableSlots(getDemoSlots());
@@ -100,11 +100,9 @@ export default function Booking() {
         return;
       }
 
-      const response = await validateCoupon({ code: couponCode });
+      const response = await validateCoupon(couponCode, selectedProduct?.price || 0);
       if (response.valid) {
-        setCouponDiscount(
-          response.discountType === "percentage" ? response.discountValue : 0
-        );
+        setCouponDiscount(response.discount_amount || 0);
       }
     } catch (err) {
       setError(getErrorMessage(err));
@@ -130,19 +128,20 @@ export default function Booking() {
       }
 
       const response = await createBooking({
-        productId: selectedProduct.id,
-        customerName,
-        customerEmail,
-        customerPhone,
-        appointmentDate: `${selectedDate}T${selectedTime}:00Z`,
-        couponCode: couponCode || undefined,
+        service_id: selectedProduct.id,
+        booking_date: selectedDate,
+        start_time: selectedTime,
+        guest_name: customerName,
+        guest_email: customerEmail,
+        guest_phone: customerPhone,
+        coupon_code: couponCode || undefined,
       });
 
       setBookingId(response.id);
       
-      if (response.paymentRequired && response.paymentUrl) {
+      if (response.payment_status === 'pending' && response.payment_url) {
         // Redirect to payment
-        window.location.href = response.paymentUrl;
+        window.location.href = response.payment_url;
       } else {
         setStep("confirmation");
       }
@@ -219,9 +218,9 @@ export default function Booking() {
                             <div className="text-2xl font-bold text-primary">
                               KES {(product.price / 100).toLocaleString()}
                             </div>
-                            {product.sessions && (
+                            {product.sessions_included && (
                               <div className="text-sm text-muted-foreground">
-                                {product.sessions} sessions
+                                {product.sessions_included} sessions
                               </div>
                             )}
                           </div>
@@ -271,7 +270,6 @@ export default function Booking() {
                         key={slot.time}
                         variant={selectedTime === slot.time ? "default" : "outline"}
                         onClick={() => setSelectedTime(slot.time)}
-                        disabled={!slot.available}
                         className="text-sm"
                       >
                         {slot.time}
@@ -477,55 +475,62 @@ export default function Booking() {
 
 // ============ DEMO DATA ============
 
-function getDemoProducts() {
+function getDemoProducts(): Service[] {
   return [
     {
       id: "pkg_1",
       name: "Single Session",
       description: "Perfect for small tattoos or first-time assessment",
       price: 50000, // KES 500
-      currency: "KES",
-      productType: "appointment" as const,
-      sessions: 1,
-      duration: 30,
-      active: true,
-      createdAt: new Date().toISOString(),
+
+      category: "appointment",
+      sessions_included: 1,
+      duration_minutes: 30,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      tenant_id: "default",
     },
     {
       id: "pkg_3",
       name: "3-Session Package",
       description: "Ideal for medium-sized tattoos",
       price: 120000, // KES 1,200
-      currency: "KES",
-      productType: "appointment" as const,
-      sessions: 3,
-      duration: 30,
-      active: true,
-      createdAt: new Date().toISOString(),
+
+      category: "appointment",
+      sessions_included: 3,
+      duration_minutes: 30,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      tenant_id: "default",
     },
     {
       id: "pkg_5",
       name: "5-Session Package",
       description: "Best value for larger or complex tattoos",
       price: 180000, // KES 1,800
-      currency: "KES",
-      productType: "appointment" as const,
-      sessions: 5,
-      duration: 30,
-      active: true,
-      createdAt: new Date().toISOString(),
+
+      category: "appointment",
+      sessions_included: 5,
+      duration_minutes: 30,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      tenant_id: "default",
     },
   ];
 }
 
-function getDemoSlots(): TimeSlot[] {
+function getDemoSlots(): AvailableSlot[] {
+  const today = new Date().toISOString().split("T")[0];
   return [
-    { date: new Date().toISOString().split("T")[0], time: "09:00", available: true },
-    { date: new Date().toISOString().split("T")[0], time: "10:00", available: true },
-    { date: new Date().toISOString().split("T")[0], time: "11:00", available: true },
-    { date: new Date().toISOString().split("T")[0], time: "14:00", available: true },
-    { date: new Date().toISOString().split("T")[0], time: "15:00", available: false },
-    { date: new Date().toISOString().split("T")[0], time: "16:00", available: true },
+    { date: today, time: "09:00", staff_id: "staff-1", staff_name: "John Doe" },
+    { date: today, time: "10:00", staff_id: "staff-1", staff_name: "John Doe" },
+    { date: today, time: "11:00", staff_id: "staff-2", staff_name: "Jane Smith" },
+    { date: today, time: "14:00", staff_id: "staff-1", staff_name: "John Doe" },
+    { date: today, time: "15:00", staff_id: "staff-2", staff_name: "Jane Smith" },
+    { date: today, time: "16:00", staff_id: "staff-1", staff_name: "John Doe" },
   ];
 }
 
