@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Link } from "wouter";
@@ -36,37 +38,7 @@ export default function Services() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-secondary/5">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2">
-              <img 
-                src="/logo.png" 
-                alt="Inkless Is More" 
-                className="h-10 w-10 object-contain"
-              />
-              <span className="font-bold text-xl">Inkless Is More</span>
-            </Link>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/" className="text-foreground hover:text-primary transition-colors">
-                Home
-              </Link>
-              <Link href="/services" className="text-primary font-semibold">
-                Services
-              </Link>
-              <Link href="/booking" className="text-foreground hover:text-primary transition-colors">
-                Book Now
-              </Link>
-            </nav>
-            <Link href="/booking">
-              <Button className="bg-primary hover:bg-primary/90">
-                Book Now
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="py-16 bg-gradient-to-br from-primary to-accent text-white">
@@ -273,12 +245,7 @@ export default function Services() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="container text-center">
-          <p className="text-gray-400">© 2025 Inkless Is More. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

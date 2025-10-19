@@ -1,0 +1,9 @@
+{
+  "query": "DROP TABLE IF EXISTS appointments, purchases, affiliates, coupons, service_packages, available_slots, blocked_dates, tenants, users;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user WsHrxMtp7ZTWShQ.root --database 94tUS6sSVJMqwFSGnumJW7 --execute DROP TABLE IF EXISTS appointments, purchases, affiliates, coupons, service_packages, available_slots, blocked_dates, tenants, users;",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2843
+}
