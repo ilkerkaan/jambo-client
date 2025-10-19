@@ -1,206 +1,531 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Link } from "wouter";
-import { Calendar, Clock, Package } from "lucide-react";
-
-/**
- * Booking Page - Placeholder for SaaS Integration
- * 
- * This page will be connected to your Elixir/Phoenix SaaS backend via API calls.
- * The backend will handle:
- * - Real-time calendar availability
- * - Service/package selection
- * - M-Pesa payment integration
- * - Session tracking
- * - Affiliate coupon code validation
- */
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { AlertCircle, CheckCircle, Clock, DollarSign, Loader } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  getProducts,
+  getAvailability,
+  createBooking,
+  validateCoupon,
+  getErrorMessage,
+  saasConfig,
+  type Product,
+  type TimeSlot,
+} from "@/lib/saasApi";
 
 export default function Booking() {
+  // Form state
+  const [step, setStep] = useState<"product" | "date" | "details" | "payment" | "confirmation">("product");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
+  const [couponCode, setCouponCode] = useState<string>("");
+  const [couponDiscount, setCouponDiscount] = useState<number>(0);
+
+  // Customer details
+  const [customerName, setCustomerName] = useState<string>("");
+  const [customerEmail, setCustomerEmail] = useState<string>("");
+  const [customerPhone, setCustomerPhone] = useState<string>("");
+
+  // Data state
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
+  const [bookingId, setBookingId] = useState<string>("");
+
+  // Load products on mount
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  async function loadProducts() {
+    try {
+      setLoading(true);
+      setError("");
+      
+      if (!saasConfig.isConfigured) {
+        setError("SaaS backend not configured. Please set VITE_SAAS_API_URL and VITE_TENANT_SLUG environment variables.");
+        // Show demo products for development
+        setProducts(getDemoProducts());
+        setLoading(false);
+        return;
+      }
+
+      const data = await getProducts();
+      setProducts(data);
+    } catch (err) {
+      setError(getErrorMessage(err));
+      // Show demo products on error
+      setProducts(getDemoProducts());
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadAvailability(date: string) {
+    try {
+      setError("");
+      
+      if (!saasConfig.isConfigured) {
+        // Show demo slots for development
+        setAvailableSlots(getDemoSlots());
+        return;
+      }
+
+      const response = await getAvailability(date);
+      setAvailableSlots(response.slots);
+    } catch (err) {
+      setError(getErrorMessage(err));
+      setAvailableSlots(getDemoSlots());
+    }
+  }
+
+  async function validateCouponCode() {
+    if (!couponCode.trim()) {
+      setCouponDiscount(0);
+      return;
+    }
+
+    try {
+      setError("");
+      
+      if (!saasConfig.isConfigured) {
+        // Demo: accept any coupon with 10% discount
+        setCouponDiscount(10);
+        return;
+      }
+
+      const response = await validateCoupon({ code: couponCode });
+      if (response.valid) {
+        setCouponDiscount(
+          response.discountType === "percentage" ? response.discountValue : 0
+        );
+      }
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  }
+
+  async function submitBooking() {
+    if (!selectedProduct || !selectedDate || !selectedTime || !customerName || !customerEmail || !customerPhone) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      if (!saasConfig.isConfigured) {
+        // Demo: create fake booking
+        setBookingId("DEMO-" + Date.now());
+        setStep("confirmation");
+        setLoading(false);
+        return;
+      }
+
+      const response = await createBooking({
+        productId: selectedProduct.id,
+        customerName,
+        customerEmail,
+        customerPhone,
+        appointmentDate: `${selectedDate}T${selectedTime}:00Z`,
+        couponCode: couponCode || undefined,
+      });
+
+      setBookingId(response.id);
+      
+      if (response.paymentRequired && response.paymentUrl) {
+        // Redirect to payment
+        window.location.href = response.paymentUrl;
+      } else {
+        setStep("confirmation");
+      }
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const finalPrice = selectedProduct
+    ? Math.round(selectedProduct.price * (1 - couponDiscount / 100))
+    : 0;
+
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-16 items-center justify-between">
-          <Link href="/">
-            <a className="flex items-center space-x-3">
-              <img src="/logo.png" alt="Inkless Is More" className="h-12 w-12" />
-              <span className="font-bold text-xl hidden sm:inline-block">Inkless Is More</span>
-            </a>
-          </Link>
-          
-          <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <Link href="/"><a className="transition-colors hover:text-primary">Home</a></Link>
-            <Link href="/services"><a className="transition-colors hover:text-primary">Services</a></Link>
-            <Link href="/how-it-works"><a className="transition-colors hover:text-primary">How It Works</a></Link>
-            <Link href="/gallery"><a className="transition-colors hover:text-primary">Gallery</a></Link>
-            <Link href="/about"><a className="transition-colors hover:text-primary">About Us</a></Link>
-            <Link href="/contact"><a className="transition-colors hover:text-primary">Contact</a></Link>
-          </nav>
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-white to-secondary/5">
+      <Header />
 
-          <Link href="/">
-            <Button variant="outline">Back to Home</Button>
-          </Link>
-        </div>
-      </header>
-
-      {/* Booking Section */}
-      <section className="py-16 flex-1">
-        <div className="container max-w-4xl">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Book Your Appointment</h1>
-            <p className="text-lg text-muted-foreground">
-              Schedule your free consultation or treatment session
+      <section className="py-12">
+        <div className="container max-w-2xl">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold mb-2">Book Your Appointment</h1>
+            <p className="text-muted-foreground">
+              Simple, straightforward process to schedule your tattoo removal sessions
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Package className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">1. Choose Package</h3>
-                <p className="text-sm text-muted-foreground">Select your service package</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">2. Pick Date & Time</h3>
-                <p className="text-sm text-muted-foreground">Choose from available slots</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                  <Clock className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-semibold mb-2">3. Confirm & Pay</h3>
-                <p className="text-sm text-muted-foreground">Secure payment via M-Pesa</p>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Error Alert */}
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
-          {/* Booking Form - Will be replaced with SaaS integration */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
-              <CardDescription>
-                Fill in your details and we'll contact you to schedule your appointment
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input id="name" placeholder="John Doe" required />
+          {/* Configuration Warning */}
+          {!saasConfig.isConfigured && (
+            <Alert className="mb-6 bg-yellow-50 border-yellow-200">
+              <AlertCircle className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-yellow-800">
+                Demo mode: SaaS backend not configured. Set VITE_SAAS_API_URL and VITE_TENANT_SLUG to enable real bookings.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Step 1: Select Product */}
+          {step === "product" && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold">Step 1: Choose Your Package</h2>
+              
+              {loading ? (
+                <div className="flex justify-center py-12">
+                  <Loader className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {products.map((product) => (
+                    <Card
+                      key={product.id}
+                      className={`cursor-pointer transition-all ${
+                        selectedProduct?.id === product.id
+                          ? "border-primary bg-primary/5"
+                          : "hover:border-primary/50"
+                      }`}
+                      onClick={() => setSelectedProduct(product)}
+                    >
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle>{product.name}</CardTitle>
+                            <CardDescription>{product.description}</CardDescription>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-primary">
+                              KES {(product.price / 100).toLocaleString()}
+                            </div>
+                            {product.sessions && (
+                              <div className="text-sm text-muted-foreground">
+                                {product.sessions} sessions
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              <Button
+                onClick={() => setStep("date")}
+                disabled={!selectedProduct}
+                className="w-full bg-primary hover:bg-primary/90"
+                size="lg"
+              >
+                Continue to Date Selection
+              </Button>
+            </div>
+          )}
+
+          {/* Step 2: Select Date & Time */}
+          {step === "date" && selectedProduct && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold">Step 2: Choose Date & Time</h2>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Select Date</label>
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value);
+                    loadAvailability(e.target.value);
+                  }}
+                  min={new Date().toISOString().split("T")[0]}
+                  className="mb-4"
+                />
+              </div>
+
+              {selectedDate && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Available Times</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {availableSlots.map((slot) => (
+                      <Button
+                        key={slot.time}
+                        variant={selectedTime === slot.time ? "default" : "outline"}
+                        onClick={() => setSelectedTime(slot.time)}
+                        disabled={!slot.available}
+                        className="text-sm"
+                      >
+                        {slot.time}
+                      </Button>
+                    ))}
                   </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number *</Label>
-                    <Input id="phone" type="tel" placeholder="+254 XXX XXX XXX" required />
-                  </div>
                 </div>
+              )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address *</Label>
-                  <Input id="email" type="email" placeholder="john@example.com" required />
-                </div>
+              <div className="flex gap-4">
+                <Button
+                  onClick={() => setStep("product")}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={() => setStep("details")}
+                  disabled={!selectedDate || !selectedTime}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+          )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="package">Select Package *</Label>
-                  <select 
-                    id="package" 
-                    className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    required
-                  >
-                    <option value="">Choose a package...</option>
-                    <option value="single">Single Session - KSh 4,500</option>
-                    <option value="small">Small Tattoo (3 sessions) - KSh 10,000</option>
-                    <option value="medium">Medium Tattoo (5 sessions) - KSh 15,000</option>
-                    <option value="scar">Laser Scar Removal - KSh 15,000</option>
-                    <option value="custom">Custom Treatment Plan</option>
-                  </select>
-                </div>
+          {/* Step 3: Customer Details */}
+          {step === "details" && selectedProduct && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold">Step 3: Your Information</h2>
 
-                <div className="space-y-2">
-                  <Label htmlFor="coupon">Coupon Code (Optional)</Label>
-                  <Input id="coupon" placeholder="Enter affiliate coupon code" />
-                  <p className="text-xs text-muted-foreground">
-                    Have a referral code? Enter it here to get your discount!
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="message">Additional Information</Label>
-                  <Textarea 
-                    id="message" 
-                    placeholder="Tell us about your tattoo (size, location, colors) or any questions you have..."
-                    rows={4}
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Full Name *</label>
+                  <Input
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="John Doe"
                   />
                 </div>
 
-                <div className="bg-accent/50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">📍 Location</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Two Rivers Mall, 1st Floor<br />
-                    Nairobi, Kenya
-                  </p>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Email *</label>
+                  <Input
+                    type="email"
+                    value={customerEmail}
+                    onChange={(e) => setCustomerEmail(e.target.value)}
+                    placeholder="john@example.com"
+                  />
                 </div>
 
-                <div className="flex gap-4">
-                  <Button type="submit" size="lg" className="flex-1">
-                    Submit Booking Request
-                  </Button>
-                  <Link href="/services">
-                    <Button type="button" variant="outline" size="lg">
-                      View Packages
+                <div>
+                  <label className="block text-sm font-medium mb-1">Phone (M-Pesa) *</label>
+                  <Input
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    placeholder="+254712345678"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Coupon Code (Optional)</label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      placeholder="Enter coupon code"
+                    />
+                    <Button
+                      onClick={validateCouponCode}
+                      variant="outline"
+                    >
+                      Apply
                     </Button>
-                  </Link>
+                  </div>
+                  {couponDiscount > 0 && (
+                    <p className="text-sm text-green-600 mt-2">
+                      ✓ {couponDiscount}% discount applied!
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Price Summary */}
+              <Card className="bg-primary/5 border-primary/20">
+                <CardHeader>
+                  <CardTitle className="text-lg">Price Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Package Price:</span>
+                    <span>KES {(selectedProduct.price / 100).toLocaleString()}</span>
+                  </div>
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount ({couponDiscount}%):</span>
+                      <span>-KES {((selectedProduct.price * couponDiscount) / 100 / 100).toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="border-t pt-2 flex justify-between font-bold text-lg">
+                    <span>Total:</span>
+                    <span className="text-primary">KES {(finalPrice / 100).toLocaleString()}</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="flex gap-4">
+                <Button
+                  onClick={() => setStep("date")}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Back
+                </Button>
+                <Button
+                  onClick={submitBooking}
+                  disabled={loading || !customerName || !customerEmail || !customerPhone}
+                  className="flex-1 bg-primary hover:bg-primary/90"
+                >
+                  {loading ? "Processing..." : "Proceed to Payment"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Confirmation */}
+          {step === "confirmation" && (
+            <Card className="border-green-200 bg-green-50">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-4">
+                  <CheckCircle className="w-8 h-8 text-green-600" />
+                  <CardTitle className="text-green-900">Booking Confirmed!</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-green-800">
+                  Your appointment has been successfully booked. A confirmation email has been sent to {customerEmail}.
+                </p>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Booking Details</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Booking ID:</span>
+                      <span className="font-mono">{bookingId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Package:</span>
+                      <span>{selectedProduct?.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Date & Time:</span>
+                      <span>{selectedDate} at {selectedTime}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Total Amount:</span>
+                      <span className="font-bold">KES {(finalPrice / 100).toLocaleString()}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 className="font-semibold text-blue-900 mb-2">What's Next?</h4>
+                  <ul className="text-sm text-blue-800 space-y-1">
+                    <li>• You'll receive a confirmation email shortly</li>
+                    <li>• Payment reminder will be sent 24 hours before appointment</li>
+                    <li>• Arrive 10 minutes early on your appointment date</li>
+                    <li>• Bring a valid ID and any relevant medical documents</li>
+                  </ul>
                 </div>
 
-                <p className="text-xs text-center text-muted-foreground">
-                  * This is a booking request. We'll contact you within 24 hours to confirm your appointment.
-                </p>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Integration Note */}
-          <Card className="mt-8 border-primary/50 bg-primary/5">
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">🔄 SaaS Integration Ready</h3>
-              <p className="text-sm text-muted-foreground">
-                This booking form is a placeholder. When integrated with your Elixir/Phoenix SaaS backend, 
-                it will provide:
-              </p>
-              <ul className="text-sm text-muted-foreground mt-2 space-y-1 list-disc list-inside">
-                <li>Real-time calendar with available time slots</li>
-                <li>Instant M-Pesa payment processing</li>
-                <li>Automatic session package tracking</li>
-                <li>Affiliate coupon code validation and discount application</li>
-                <li>Email and SMS confirmation notifications</li>
-              </ul>
-            </CardContent>
-          </Card>
+                <Button
+                  onClick={() => {
+                    setStep("product");
+                    setSelectedProduct(null);
+                    setSelectedDate("");
+                    setSelectedTime("");
+                    setCustomerName("");
+                    setCustomerEmail("");
+                    setCustomerPhone("");
+                    setCouponCode("");
+                    setCouponDiscount(0);
+                  }}
+                  className="w-full bg-primary hover:bg-primary/90"
+                  size="lg"
+                >
+                  Book Another Appointment
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-muted/30 py-8">
-        <div className="container text-center text-sm text-muted-foreground">
-          <p>© 2025 Inkless Is More. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
+}
+
+// ============ DEMO DATA ============
+
+function getDemoProducts() {
+  return [
+    {
+      id: "pkg_1",
+      name: "Single Session",
+      description: "Perfect for small tattoos or first-time assessment",
+      price: 50000, // KES 500
+      currency: "KES",
+      productType: "appointment" as const,
+      sessions: 1,
+      duration: 30,
+      active: true,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "pkg_3",
+      name: "3-Session Package",
+      description: "Ideal for medium-sized tattoos",
+      price: 120000, // KES 1,200
+      currency: "KES",
+      productType: "appointment" as const,
+      sessions: 3,
+      duration: 30,
+      active: true,
+      createdAt: new Date().toISOString(),
+    },
+    {
+      id: "pkg_5",
+      name: "5-Session Package",
+      description: "Best value for larger or complex tattoos",
+      price: 180000, // KES 1,800
+      currency: "KES",
+      productType: "appointment" as const,
+      sessions: 5,
+      duration: 30,
+      active: true,
+      createdAt: new Date().toISOString(),
+    },
+  ];
+}
+
+function getDemoSlots(): TimeSlot[] {
+  return [
+    { date: new Date().toISOString().split("T")[0], time: "09:00", available: true },
+    { date: new Date().toISOString().split("T")[0], time: "10:00", available: true },
+    { date: new Date().toISOString().split("T")[0], time: "11:00", available: true },
+    { date: new Date().toISOString().split("T")[0], time: "14:00", available: true },
+    { date: new Date().toISOString().split("T")[0], time: "15:00", available: false },
+    { date: new Date().toISOString().split("T")[0], time: "16:00", available: true },
+  ];
 }
 
