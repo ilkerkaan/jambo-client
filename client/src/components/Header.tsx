@@ -18,34 +18,33 @@ export default function Header() {
       <div className="container">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/">
-            <a className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <img 
-                src="/logo.png" 
-                alt="Inkless Is More" 
-                className="h-10 w-10 object-contain"
-              />
-              <span className="font-bold text-xl text-foreground">Inkless Is More</span>
-            </a>
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+            <img 
+              src="/logo.png" 
+              alt="Inkless Is More" 
+              className="h-10 w-10 object-contain"
+            />
+            <span className="font-bold text-xl text-foreground">Inkless Is More</span>
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href}>
-                <a 
-                  className={`text-foreground hover:text-primary transition-colors font-medium ${
-                    location === link.href ? 'text-primary' : ''
-                  }`}
-                >
-                  {link.label}
-                </a>
+              <Link 
+                key={link.href} 
+                href={link.href}
+                className={`text-foreground hover:text-primary transition-colors font-medium ${
+                  location === link.href ? 'text-primary' : ''
+                }`}
+              >
+                {link.label}
               </Link>
             ))}
-            <Link href="/admin">
-              <a className="text-muted-foreground hover:text-primary transition-colors text-sm">
-                Admin
-              </a>
+            <Link 
+              href="/admin"
+              className="text-muted-foreground hover:text-primary transition-colors text-sm"
+            >
+              Admin
             </Link>
           </nav>
 
@@ -77,26 +76,25 @@ export default function Header() {
           <div className="md:hidden py-4 border-t">
             <nav className="flex flex-col gap-4">
               {navLinks.map((link) => (
-                <Link key={link.href} href={link.href}>
-                  <a 
-                    className={`text-foreground hover:text-primary transition-colors font-medium ${
-                      location === link.href ? 'text-primary' : ''
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </a>
-                </Link>
-              ))}
-              <Link href="/admin">
-                <a 
-                  className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                <Link 
+                  key={link.href} 
+                  href={link.href}
+                  className={`text-foreground hover:text-primary transition-colors font-medium ${
+                    location === link.href ? 'text-primary' : ''
+                  }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Admin
-                </a>
+                  {link.label}
+                </Link>
+              ))}
+              <Link 
+                href="/admin"
+                className="text-muted-foreground hover:text-primary transition-colors text-sm"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Admin
               </Link>
-              <Link href="/booking">
+              <Link href="/booking" onClick={() => setMobileMenuOpen(false)}>
                 <Button 
                   className="bg-primary hover:bg-primary/90 text-white w-full"
                   onClick={() => setMobileMenuOpen(false)}

@@ -7,7 +7,8 @@ import { AlertCircle, Loader, Lock } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function AdminLogin() {
-  const [location, setLocation] = useLocation();
+  const [location] = useLocation();
+  const [, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -17,10 +18,10 @@ export default function AdminLogin() {
   // Check if already logged in
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
-    if (token) {
+    if (token && location !== "/admin") {
       setLocation("/admin");
     }
-  }, [setLocation]);
+  }, []);
 
   async function handlePasswordLogin(e: React.FormEvent) {
     e.preventDefault();
