@@ -27,10 +27,9 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     const email = localStorage.getItem("adminEmail");
     
     if (token && email) {
-      // Verify token is still valid
       setUser({
         email,
-        role: "owner", // Default role
+        role: "owner",
       });
     }
     
@@ -38,17 +37,7 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   async function login(email: string, password: string) {
-    setIsLoading(true);
     try {
-      // TODO: Replace with actual API call to SaaS backend
-      // const response = await fetch('/api/admin/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password })
-      // });
-      // const data = await response.json();
-      // if (!response.ok) throw new Error(data.message);
-
       // Demo: Accept any email/password for development
       if (email && password.length >= 6) {
         const token = "demo_token_" + Date.now();
@@ -60,28 +49,18 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
           role: "owner",
         });
       } else {
-        throw new Error("Invalid email or password");
+        throw new Error("Password must be at least 6 characters");
       }
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      throw error;
     }
   }
 
   async function googleLogin(token: string) {
-    setIsLoading(true);
     try {
-      // TODO: Implement Google OAuth token verification
-      // const response = await fetch('/api/admin/google-login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ token })
-      // });
-      // const data = await response.json();
-      // if (!response.ok) throw new Error(data.message);
-
       throw new Error("Google login not yet implemented");
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      throw error;
     }
   }
 

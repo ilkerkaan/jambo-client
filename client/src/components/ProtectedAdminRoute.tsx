@@ -2,6 +2,7 @@ import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
 import { Loader } from "lucide-react";
+import AdminLogin from "@/pages/AdminLogin";
 
 interface ProtectedAdminRouteProps {
   children: React.ReactNode;
@@ -29,7 +30,7 @@ export default function ProtectedAdminRoute({ children }: ProtectedAdminRoutePro
   }
 
   if (!isAuthenticated) {
-    return null; // Will redirect to login
+    return <AdminLogin />; // Show login page
   }
 
   return <>{children}</>;
