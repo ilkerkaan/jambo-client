@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,12 +7,20 @@ import { AlertCircle, Loader, Lock } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function AdminLogin() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [loginMethod, setLoginMethod] = useState<"password" | "google">("password");
+
+  // Check if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (token) {
+      setLocation("/admin");
+    }
+  }, [setLocation]);
 
   async function handlePasswordLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -36,11 +44,14 @@ export default function AdminLogin() {
       // Demo: Accept any email/password for development
       if (email && password.length >= 6) {
         // Store auth token in localStorage
-        localStorage.setItem("adminToken", "demo_token_" + Date.now());
+        const token = "demo_token_" + Date.now();
+        localStorage.setItem("adminToken", token);
         localStorage.setItem("adminEmail", email);
+        // Small delay to ensure state updates before redirect
+        await new Promise(resolve => setTimeout(resolve, 100));
         setLocation("/admin");
       } else {
-        setError("Invalid email or password");
+        setError("Password must be at least 6 characters");
       }
     } catch (err) {
       setError("Login failed. Please try again.");
